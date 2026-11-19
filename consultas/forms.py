@@ -138,3 +138,57 @@ class CitaForm(forms.ModelForm):
                     f"(cada cita dura {DURACION_CITA_MIN} min).",
                 )
                 return
+
+
+class ConsultaForm(forms.ModelForm):
+    """Registro de la consulta médica post-atención (RF2)."""
+
+    class Meta:
+        model = Consulta
+        fields = [
+            "diagnostico", "tratamiento", "medicamentos",
+            "proxima_cita_control", "adjuntos_descripcion",
+        ]
+        widgets = {
+            "diagnostico": forms.Textarea(attrs={"rows": 3}),
+            "tratamiento": forms.Textarea(attrs={"rows": 3}),
+            "medicamentos": forms.Textarea(attrs={"rows": 2}),
+            "adjuntos_descripcion": forms.Textarea(attrs={"rows": 2}),
+            "proxima_cita_control": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+        }
+
+    def clean_diagnostico(self):
+        valor = sanitizar_texto(self.cleaned_data["diagnostico"])
+        if len(valor) < 10:
+            raise ValidationError("El diagnóstico debe tener al menos 10 caracteres.")
+        return valor
+
+    def clean_tratamiento(self):
+        return sanitizar_texto(self.cleaned_data["tratamiento"])
+
+    def clean_medicamentos(self):
+        return sanitizar_texto(self.cleaned_data.get("medicamentos"))
+
+    def clean_adjuntos_descripcion(self):
+        return sanitizar_texto(self.cleaned_data.get("adjuntos_descripcion"))
+
+    def clean_proxima_cita_control(self):
+        fecha = self.cleaned_data.get("proxima_cita_control")
+        if fecha and fecha <= timezone.localdate():
+            raise ValidationError("La próxima cita de control debe ser una fecha futura.")
+        return fecha
+
+
+class NotaConsultaForm(forms.ModelForm):
+    """Una consulta no se edita: solo se le agregan notas."""
+
+    class Meta:
+        model = NotaConsulta
+        fields = ["texto"]
+        widgets = {"texto": forms.Textarea(attrs={"rows": 2})}
+
+    def clean_texto(self):
+        texto = sanitizar_texto(self.cleaned_data["texto"])
+        if len(texto) < 5:
+            raise ValidationError("La nota debe tener al menos 5 caracteres.")
+        return texto
