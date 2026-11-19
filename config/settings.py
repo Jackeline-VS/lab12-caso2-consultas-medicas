@@ -28,7 +28,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    # Los middleware propios se registran aquí a medida que se implementan.
+    "consultas.middleware.AuditoriaMedicaMiddleware",
+    "consultas.middleware.HorarioAtencionMiddleware",
+    "consultas.middleware.AlertasMedicoMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"

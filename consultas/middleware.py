@@ -89,3 +89,31 @@ class HorarioAtencionMiddleware:
                 )
                 return redirect(request.path)
         return self.get_response(request)
+
+
+class AlertasMedicoMiddleware:
+    """Al iniciar sesión, avisa al médico de sus citas pendientes."""
+
+    CLAVE_SESION = "alerta_citas_revisada"
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        user = request.user
+        if user.is_authenticated and not request.session.get(self.CLAVE_SESION):
+            request.session[self.CLAVE_SESION] = True
+            medico = perfil_medico(user)
+            if medico:
+                hoy = timezone.localdate()
+                pendientes = Cita.objects.filter(
+                    medico=medico, estado=Cita.Estado.PROGRAMADA, fecha__gte=hoy
+                )
+                total, de_hoy = pendientes.count(), pendientes.filter(fecha=hoy).count()
+                if total:
+                    messages.info(
+                        request,
+                        f"Tiene {total} cita(s) pendiente(s), {de_hoy} para hoy.",
+                    )
+                    logger.info("ALERTA CITAS medico=%s pendientes=%s hoy=%s", user.username, total, de_hoy)
+        return self.get_response(request)
