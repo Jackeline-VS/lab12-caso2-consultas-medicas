@@ -1,4 +1,5 @@
 """Grupos, permisos y reglas de autorización del Caso 2."""
+from .models import Medico, Paciente
 
 GRUPO_ADMINS = "Admins"
 GRUPO_MEDICOS = "Médicos"
@@ -23,3 +24,31 @@ HORARIO_ATENCION = {
 
 def en_grupo(user, nombre):
     return user.is_authenticated and user.groups.filter(name=nombre).exists()
+
+
+DURACION_CITA_MIN = 30  # cada cita médica dura 30 minutos
+
+
+def minutos(hora):
+    return hora.hour * 60 + hora.minute
+
+
+def dentro_de_horario(fecha, hora):
+    """True si fecha/hora caen dentro del horario de atención (L-V 8-18, Sáb 8-13)."""
+    rango = HORARIO_ATENCION.get(fecha.weekday())
+    if not rango:
+        return False  # domingo
+    inicio, fin = rango
+    return inicio <= hora.strftime("%H:%M") < fin
+
+
+def perfil_medico(user):
+    if not user.is_authenticated:
+        return None
+    return Medico.objects.select_related("especialidad").filter(usuario=user).first()
+
+
+def perfil_paciente(user):
+    if not user.is_authenticated:
+        return None
+    return Paciente.objects.filter(usuario=user).first()
