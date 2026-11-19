@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block titulo %}Ingresar{% endblock %}
+{% block contenido %}
+<div class="card">
+  <h2>Ingreso al sistema de consultas</h2>
+  <form method="post">
+    {% csrf_token %}
+    {% if form.errors %}<div class="msg error">Usuario o contraseña incorrectos.</div>{% endif %}
+    <p><label for="id_username"><b>Usuario</b></label><br>{{ form.username }}</p>
+    <p><label for="id_password"><b>Contraseña</b></label><br>{{ form.password }}</p>
+    <input type="hidden" name="next" value="{{ next }}">
+    <button class="btn" type="submit">Ingresar</button>
+  </form>
+</div>
+{% endblock %}

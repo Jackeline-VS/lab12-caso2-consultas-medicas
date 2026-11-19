@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block titulo %}Historial clínico{% endblock %}
+{% block contenido %}
+<div class="card">
+  <h2>Historial clínico: {{ paciente.apellidos }}, {{ paciente.nombres }}</h2>
+  <p>DNI {{ paciente.dni }} · {{ paciente.edad }} años · {{ paciente.get_tipo_display }}
+     · Alergias: {{ paciente.alergias|default:"ninguna registrada" }}</p>
+</div>
+{% for c in consultas %}
+<div class="card">
+  <h3>{{ c.creado_en|date:"d/m/Y H:i" }} - {{ c.cita.medico }}</h3>
+  <p><b>Diagnóstico:</b> {{ c.diagnostico }}</p>
+  <p><b>Tratamiento:</b> {{ c.tratamiento }}</p>
+  {% if c.medicamentos %}<p><b>Medicamentos:</b> {{ c.medicamentos }}</p>{% endif %}
+  {% if c.proxima_cita_control %}<p><b>Próximo control:</b> {{ c.proxima_cita_control|date:"d/m/Y" }}</p>{% endif %}
+  {% if c.adjuntos_descripcion %}<p><b>Adjuntos:</b> {{ c.adjuntos_descripcion }}</p>{% endif %}
+  {% for n in c.notas.all %}
+    <div class="nota"><b>{{ n.autor.get_username }}</b> ({{ n.creado_en|date:"d/m/Y H:i" }}): {{ n.texto }}</div>
+  {% endfor %}
+  {% if es_medico %}
+  <form method="post">{% csrf_token %}
+    <input type="hidden" name="consulta_id" value="{{ c.pk }}">
+    <textarea name="texto" rows="2" placeholder="Agregar nota (la consulta no se modifica)"></textarea>
+    <button class="btn" type="submit">Agregar nota</button>
+  </form>
+  {% endif %}
+</div>
+{% empty %}
+<div class="card">Sin consultas registradas.</div>
+{% endfor %}
+{% endblock %}
