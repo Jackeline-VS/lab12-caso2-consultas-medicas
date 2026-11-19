@@ -1,0 +1,23 @@
+# Entorno virtual y base de datos local (exigido por la guía)
+venv/
+.venv/
+env/
+db.sqlite3
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Django
+logs/
+media/
+staticfiles/
+.env
+
+# Editor / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
