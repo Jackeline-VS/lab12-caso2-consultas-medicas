@@ -1,0 +1,24 @@
+{% extends "consultas/formulario.html" %}
+{% block scripts %}
+<script>
+(function () {
+  // Filtra los médicos según la especialidad elegida.
+  var esp = document.getElementById("id_especialidad");
+  var med = document.getElementById("id_medico");
+  if (!esp || !med) { return; }
+  function filtrar() {
+    var nombre = esp.options[esp.selectedIndex].text;
+    Array.prototype.forEach.call(med.options, function (o) {
+      if (!o.value) { return; }
+      var visible = !esp.value || o.text.endsWith(" - " + nombre);
+      o.hidden = !visible;
+      o.disabled = !visible;
+    });
+    var actual = med.options[med.selectedIndex];
+    if (actual && actual.disabled) { med.value = ""; }
+  }
+  esp.addEventListener("change", filtrar);
+  filtrar();
+})();
+</script>
+{% endblock %}

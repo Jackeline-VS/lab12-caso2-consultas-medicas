@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Consultas Médicas{% endblock %} - UNCP</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; background: #f2f7f6; color: #1c2733; }
+    header { background: #0b5d56; color: #fff; padding: .8rem 1.5rem; display: flex; gap: 1.2rem; align-items: center; flex-wrap: wrap; }
+    header a, header button { color: #fff; text-decoration: none; background: none; border: 0; font: inherit; cursor: pointer; }
+    header .marca { font-weight: 700; margin-right: auto; }
+    main { max-width: 1000px; margin: 1.5rem auto; padding: 0 1rem; }
+    .card { background: #fff; border-radius: 8px; padding: 1.2rem 1.5rem; box-shadow: 0 1px 3px #0002; margin-bottom: 1rem; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: .5rem; border-bottom: 1px solid #e2e6ea; vertical-align: top; }
+    .msg { padding: .7rem 1rem; border-radius: 6px; margin-bottom: .6rem; }
+    .msg.success { background: #d9f2e1; } .msg.error { background: #fadbd8; }
+    .msg.warning { background: #fdebc8; } .msg.info { background: #d6e9f8; }
+    .errorlist { color: #b00020; list-style: none; padding: 0; margin: .2rem 0; }
+    input, select, textarea { padding: .45rem; width: 100%; max-width: 460px; box-sizing: border-box; }
+    .btn { background: #0b5d56; color: #fff; border: 0; padding: .45rem .9rem; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; }
+    .btn.peligro { background: #b00020; }
+    .nota { background: #f4f4f4; padding: .4rem .7rem; border-radius: 6px; margin: .3rem 0; }
+  </style>
+</head>
+<body>
+<header>
+  <span class="marca">Consultas Médicas - Centro Médico UNCP</span>
+  {% if user.is_authenticated %}
+    <a href="{% url 'citas' %}">Citas</a>
+    {% if perms.consultas.agendar_cita %}<a href="{% url 'cita_nueva' %}">Nueva cita</a>{% endif %}
+    {% if perms.consultas.add_paciente %}<a href="{% url 'paciente_nuevo' %}">Registrar paciente</a>{% endif %}
+    {% if mi_paciente_id %}<a href="{% url 'historial' mi_paciente_id %}">Mi historial</a>{% endif %}
+    {% if perms.consultas.generar_reportes %}<a href="{% url 'reportes' %}">Reportes</a>{% endif %}
+    {% if user.is_staff %}<a href="{% url 'admin:index' %}">Admin</a>{% endif %}
+    <span>{{ user.get_username }}</span>
+    <form method="post" action="{% url 'logout' %}" style="display:inline">{% csrf_token %}<button type="submit">Salir</button></form>
+  {% else %}
+    <a href="{% url 'login' %}">Ingresar</a>
+  {% endif %}
+</header>
+<main>
+  {% for m in messages %}<div class="msg {{ m.tags }}">{{ m }}</div>{% endfor %}
+  {% block contenido %}{% endblock %}
+</main>
+{% block scripts %}{% endblock %}
+</body>
+</html>
