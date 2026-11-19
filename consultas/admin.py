@@ -58,3 +58,55 @@ class CitaAdmin(admin.ModelAdmin):
             estado=Cita.Estado.COMPLETADA
         )
         self.message_user(request, f"{n} cita(s) marcadas como completadas.", messages.SUCCESS)
+
+
+@admin.register(Consulta)
+class ConsultaAdmin(admin.ModelAdmin):
+    """Las consultas registradas no se modifican ni se eliminan (integridad)."""
+
+    list_display = ("cita", "creado_en", "proxima_cita_control")
+    list_select_related = ("cita__paciente", "cita__medico__usuario")
+    search_fields = ("cita__paciente__dni", "cita__paciente__apellidos")
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(NotaConsulta)
+class NotaConsultaAdmin(admin.ModelAdmin):
+    list_display = ("consulta", "autor", "creado_en")
+    list_select_related = ("consulta__cita__paciente", "autor")
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(AccesoHistorial)
+class AccesoHistorialAdmin(admin.ModelAdmin):
+    """Bitácora de accesos a historiales: solo lectura y solo superusuarios."""
+
+    list_display = ("fecha", "usuario", "accion", "paciente", "ip")
+    list_filter = ("accion", "fecha")
+    search_fields = ("usuario__username", "paciente__dni", "paciente__apellidos")
+    list_select_related = ("usuario", "paciente")
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_module_permission(self, request):
+        return request.user.is_superuser
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
