@@ -48,13 +48,37 @@ templates/     plantillas
 - `dev/integrante-1`: modelos, formularios, validaciones, admin, plantillas.
 - `dev/integrante-2`: settings, middleware, autenticación, grupos y permisos.
 
+## Datos de prueba
+```powershell
+python manage.py cargar_datos
+```
+Usuarios (clave `Uncp2026*`): `admin1`, `rec1` (recepcionista), `med1`-`med8` (médicos),
+`pac1`-`pac3` (pacientes).
+
+## Reglas de negocio implementadas
+- DNI de 8 dígitos, CMP de 5-6 dígitos, fecha de nacimiento no futura, email `@uncp.edu.pe` para estudiantes.
+- Cita: motivo de al menos 20 caracteres, médico filtrado por especialidad, slot libre,
+  sin citas superpuestas del médico (30 min), un paciente no puede tener 2 citas el mismo día.
+- La consulta registrada no se modifica (solo se agregan notas).
+- Historial clínico: solo médicos y el propio paciente; cada acceso queda auditado.
+- Trazabilidad de cambios en el admin: botón "Historial" de cada registro (quién, cuándo, qué).
+
+## Middleware
+1. `AuditoriaMedicaMiddleware`: registra peticiones, accesos a historiales y accesos no autorizados.
+2. `HorarioAtencionMiddleware`: bloquea agendar fuera de L-V 8-18 / Sáb 8-13.
+3. `AlertasMedicoMiddleware`: al iniciar sesión avisa al médico de sus citas pendientes.
+
+## Seguridad
+CSRF en todos los formularios POST, contraseñas con PBKDF2, cookies HttpOnly,
+timeout de 20 min por inactividad, sanitización de textos clínicos.
+
 ## Avance
-- [x] Esqueleto del proyecto y configuración de sesiones/cookies (20 min)
-- [x] Modelos: Especialidad, Medico, Paciente, Cita, Consulta, NotaConsulta, AccesoHistorial
-- [x] Grupos, permisos y horario de atención (constantes)
-- [ ] Formulario de cita con validaciones cruzadas (RF2)
-- [ ] Middleware: auditoría médica, horario, alertas (RF4)
-- [ ] Login diferenciado y control de permisos (RF3)
-- [ ] Django Admin: agenda, estadísticas, acciones masivas (RF5)
-- [ ] Datos de prueba (8 médicos, 15 pacientes, 30 citas)
-- [ ] Diagrama de roles y permisos
+- [x] Esqueleto, sesiones y cookies seguras (20 min)
+- [x] Modelos y grupos/permisos
+- [x] Formularios con validaciones cruzadas (RF1, RF2)
+- [x] Django Admin: agenda, filtros, acciones y campos calculados (RF5)
+- [x] Middleware de auditoría, horario y alertas (RF4)
+- [x] Login, permisos por rol y vistas protegidas (RF3)
+- [x] Reportes: citas por especialidad, médicos y pacientes frecuentes
+- [x] Datos de prueba (8 médicos, 15 pacientes, 30 citas)
+- [ ] Capturas y diagrama de roles (informe PDF)

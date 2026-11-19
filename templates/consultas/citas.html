@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block titulo %}Citas{% endblock %}
+{% block contenido %}
+<div class="card">
+  <h2>Citas médicas</h2>
+  <form method="get" style="margin-bottom:1rem">
+    <label>Filtrar por fecha: <input type="date" name="fecha" value="{{ fecha|date:'Y-m-d' }}" style="width:auto"></label>
+    <button class="btn" type="submit">Filtrar</button>
+    <a href="{% url 'citas' %}">Ver todas</a>
+  </form>
+  <table>
+    <tr><th>Fecha</th><th>Hora</th><th>Paciente</th><th>Médico</th><th>Estado</th><th>Acciones</th></tr>
+    {% for c in citas %}
+    <tr>
+      <td>{{ c.fecha|date:"d/m/Y" }}</td>
+      <td>{{ c.hora|time:"H:i" }}</td>
+      <td>{{ c.paciente.apellidos }}, {{ c.paciente.nombres }}</td>
+      <td>{{ c.medico }}</td>
+      <td>{{ c.get_estado_display }}</td>
+      <td>
+        {% if c.puede_atender %}<a class="btn" href="{% url 'consulta_registrar' c.pk %}">Atender</a>{% endif %}
+        {% if c.puede_historial %}<a href="{% url 'historial' c.paciente.pk %}">Historial</a>{% endif %}
+        {% if c.puede_cancelar %}
+        <form method="post" action="{% url 'cita_cancelar' c.pk %}" style="display:inline">{% csrf_token %}<button class="btn peligro" type="submit">Cancelar</button></form>
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}<tr><td colspan="6">Sin citas.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

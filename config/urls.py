@@ -1,7 +1,8 @@
-"""Rutas principales. Las rutas de la app se agregan al implementar las vistas."""
+"""Rutas principales del proyecto."""
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("", include("consultas.urls")),
 ]

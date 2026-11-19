@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="card">
+  <h2>Bienvenido, {{ user.get_full_name|default:user.get_username }}</h2>
+  <p>Grupo:
+    {% for g in user.groups.all %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% empty %}Sin grupo{% endfor %}
+  </p>
+  <p>Use el menú superior para gestionar citas e historiales según su rol.</p>
+</div>
+{% endblock %}
