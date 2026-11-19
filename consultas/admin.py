@@ -35,3 +35,26 @@ class PacienteAdmin(admin.ModelAdmin):
     def dias_ultima_consulta(self, obj):
         dias = obj.dias_desde_ultima_consulta
         return "Sin consultas" if dias is None else dias
+
+
+@admin.register(Cita)
+class CitaAdmin(admin.ModelAdmin):
+    """Agenda diaria por médico: filtre por fecha y médico."""
+
+    list_display = ("fecha", "hora", "paciente", "medico", "estado")
+    list_filter = ("fecha", "estado", "medico", "medico__especialidad")
+    search_fields = (
+        "paciente__dni", "paciente__nombres", "paciente__apellidos",
+        "medico__usuario__last_name",
+    )
+    list_select_related = ("paciente", "medico__usuario", "medico__especialidad")
+    date_hierarchy = "fecha"
+    ordering = ("fecha", "hora")
+    actions = ["marcar_completadas"]
+
+    @admin.action(description="Marcar citas como completadas")
+    def marcar_completadas(self, request, queryset):
+        n = queryset.filter(estado=Cita.Estado.PROGRAMADA).update(
+            estado=Cita.Estado.COMPLETADA
+        )
+        self.message_user(request, f"{n} cita(s) marcadas como completadas.", messages.SUCCESS)
