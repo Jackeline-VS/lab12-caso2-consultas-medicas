@@ -63,3 +63,29 @@ class AuditoriaMedicaMiddleware:
         ):
             logger.warning("INTENTO SIN AUTENTICAR ip=%s ruta=%s", ip, request.path)
         return response
+
+
+class HorarioAtencionMiddleware:
+    """Impide agendar citas fuera del horario de atención (L-V 8-18, Sáb 8-13)."""
+
+    RUTA = "/citas/nueva/"
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.method == "POST" and request.path == self.RUTA and request.user.is_authenticated:
+            fecha = parse_date(request.POST.get("fecha", ""))
+            hora = parse_time(request.POST.get("hora", ""))
+            if fecha and hora and not dentro_de_horario(fecha, hora):
+                logger.warning(
+                    "HORARIO FUERA DE ATENCION usuario=%s fecha=%s hora=%s",
+                    request.user.username, fecha, hora,
+                )
+                messages.error(
+                    request,
+                    "Las citas solo se agendan en horario de atención "
+                    "(L-V 8:00-18:00, Sáb 8:00-13:00).",
+                )
+                return redirect(request.path)
+        return self.get_response(request)
